@@ -1,0 +1,57 @@
+- Định nghĩa giao dịch tập trung: "Giao dịch tập trung là một giao dịch mà toàn 
+bộ quá trình xử lý các tác vụ được quản lý và thực hiện trong phạm vi một hệ 
+thống hoặc cơ sở dữ liệu duy nhất. Một giao dịch trong ngữ cảnh này có thể bao 
+gồm nhiều thao tác khác nhau trên cơ sở dữ liệu (như đọc, ghi dữ liệu) và những 
+thao tác này cần phải đảm bảo tính toàn vẹn, chính xác, và nhất quán của hệ thống.
+- Nếu tất cả giao dịch thành công(commit)
+- Nếu nếu có lỗi, tất cả đều được hoàn tác(rollback)"
+
+*** Yêu cầu cho giao dịch tập trung:
+- Một nguồn dữ liệu duy nhất
+- Các thao tác trong giao dịch phải được thực hiện trong một hệ thống cơ sở dữ liệu duy nhất
+- Tính chất ACID (Atomicity, Consistency, Isolation, Durability)
+
+
+- Định nghĩa giao dịch phân tán: "Giao dịch phân tán (distributed transaction) 
+là một tập hợp các thao tác được thực hiện trên nhiều hệ thống cơ sở dữ liệu 
+độc lập (có thể là cùng loại hoặc khác loại), nhưng vẫn phải đảm bảo tính 
+nguyên tử (atomicity): tất cả thao tác thành công cùng nhau hoặc thất bại cùng 
+nhau.
+- Nếu tất cả giao dịch thành công(commit)
+- Nếu nếu có lỗi, tất cả đều được hoàn tác(rollback)"
+
+*** Yêu cầu cho giao dịch phân tán:
+- Có ít nhất hai nguồn dữ liệu độc lập (ví dụ: hai database).
+- Các thao tác trên các nguồn này được phối hợp để đảm bảo tính nhất quán (consistency).
+
+
+1. Kết nối MongoDB Replica Set
+2. Định nghĩa Schema và Model
+-User: Chứa thông tin về người dùng, bao gồm tên và số dư (balance).
+-Order: Lưu trữ thông tin đơn hàng, bao gồm userId, sản phẩm và giá tiền.
+3. Khởi tạo Transaction
+-startSession(): Bắt đầu một session để thực hiện giao dịch.
+-startTransaction(): Bắt đầu một giao dịch mới.
+4. Kiểm tra số dư của User
+-Truy vấn tài khoản của Alice với session đang mở.
+-Kiểm tra xem số dư của Alice có đủ để mua hàng hay không.
+5. Trừ tiền trong tài khoản của User
+-Sử dụng toán tử $inc để giảm số dư tài khoản của Alice trong cùng session giao dịch.
+6. Tạo đơn hàng mới
+-Thêm một đơn hàng mới vào collection Order trong cùng session giao dịch.
+7. Commit Transaction
+-Nếu mọi thao tác thành công, ta commit giao dịch để áp dụng các thay đổi vào database.
+8. Rollback nếu có lỗi
+-Nếu xảy ra lỗi, ta hủy bỏ giao dịch (abortTransaction), đảm bảo rằng dữ liệu không bị thay đổi.
+9. Đóng session và kết nối
+-endSession(): Kết thúc session.
+-mongoose.connection.close(): Đóng kết nối MongoDB
+
+
+*** Cách thực hiện 
+- Trong MongoDB kết nối tới uri "mongodb://localhost:27017,localhost:27018,localhost:27019/mydb?replicaSet=myReplicaSet"
+- Insert data { name: "Alice", balance: 100 }
+-Trong terminal của thư mục mongo-transaction , chạy câu lệnh node transaction.js 
+
+
+
